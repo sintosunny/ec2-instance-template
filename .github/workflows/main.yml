@@ -4,7 +4,6 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: Terraform action
         required: true
         type: choice
         options:
@@ -13,19 +12,15 @@ on:
           - delete
 
       instance_name:
-        description: EC2 instance name
         required: false
 
       ami:
-        description: AMI ID
         required: false
 
       volume_size:
-        description: Root volume size (GB)
         required: false
 
       postgres:
-        description: Install Postgres
         required: false
         type: boolean
 
@@ -34,8 +29,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo created by Backstage
-      - name: Checkout repo
+      # 1️⃣ Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       # 2️⃣ Setup Terraform
@@ -44,20 +39,31 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      # 3️⃣ Generate terraform.tfvars (for create / modify)
+      # 3️⃣ Generate terraform.tfvars safely (NO GitHub logic)
       - name: Generate terraform.tfvars
         if: ${{ github.event.inputs.action != 'delete' }}
         run: |
           echo "Generating terraform.tfvars"
+
+          INSTANCE_NAME="${{ github.event.inputs.instance_name }}"
+          AMI="${{ github.event.inputs.ami }}"
+          POSTGRES="${{ github.event.inputs.postgres }}"
+          VOLUME_SIZE="${{ github.event.inputs.volume_size }}"
+
+          [ -z "$INSTANCE_NAME" ] && INSTANCE_NAME="${GITHUB_REPOSITORY}"
+          [ -z "$AMI" ] && AMI="ami-0abcdef"
+          [ -z "$VOLUME_SIZE" ] && VOLUME_SIZE="8"
+          [ -z "$POSTGRES" ] && POSTGRES="false"
+
           cat <<EOF > terraform.tfvars
-          instance_name = "${{ github.event.inputs.instance_name || github.repository }}"
-          ami           = "${{ github.event.inputs.ami || 'ami-0abcdef' }}"
+          instance_name = "$INSTANCE_NAME"
+          ami           = "$AMI"
           instance_type = "t3.micro"
-          volume_size   = ${GITHUB_EVENT_INPUTS_VOLUME_SIZE:-8}
-          postgres      = ${{ github.event.inputs.postgres || false }}
+          volume_size   = $VOLUME_SIZE
+          postgres      = $POSTGRES
           EOF
 
-          echo "Generated terraform.tfvars:"
+          echo "terraform.tfvars generated:"
           cat terraform.tfvars
 
       # 4️⃣ Terraform Init
