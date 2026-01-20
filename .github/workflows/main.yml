@@ -72,7 +72,7 @@ jobs:
 
       # 5️⃣ Terraform Apply (create / modify)
       - name: Terraform Apply
-        if: ${{ github.event.inputs.action == 'create' || github.event.inputs.action == 'modify' }}
+        if: ${{ github.event.inputs.action == 'create' }}
         run: terraform apply -auto-approve
 
       # 6️⃣ Terraform Destroy (delete)
