@@ -73,7 +73,6 @@ jobs:
 
           cat terraform.tfvars
 
-      # 5️⃣ Terraform Init
       - name: Terraform Init
         run: terraform init
       # 4️⃣ Terraform Init
