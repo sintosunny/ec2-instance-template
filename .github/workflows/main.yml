@@ -39,17 +39,17 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      # 3️⃣ Generate terraform.tfvars safely (NO GitHub logic)
+      # 3️⃣ Generate terraform.tfvars
       - name: Generate terraform.tfvars
-        if: ${{ github.event.inputs.action != 'delete' }}
         run: |
-          echo "Generating terraform.tfvars"
+          echo "Generating terraform.tfvars from workflow inputs"
 
           INSTANCE_NAME="${{ github.event.inputs.instance_name }}"
           AMI="${{ github.event.inputs.ami }}"
-          POSTGRES="${{ github.event.inputs.postgres }}"
           VOLUME_SIZE="${{ github.event.inputs.volume_size }}"
+          POSTGRES="${{ github.event.inputs.postgres }}"
 
+          # Set defaults if inputs are empty
           [ -z "$INSTANCE_NAME" ] && INSTANCE_NAME="${GITHUB_REPOSITORY}"
           [ -z "$AMI" ] && AMI="ami-0abcdef"
           [ -z "$VOLUME_SIZE" ] && VOLUME_SIZE="8"
@@ -70,12 +70,17 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      # 5️⃣ Terraform Apply (create / modify)
-      - name: Terraform Apply
+      # 5️⃣ Terraform Apply for Create
+      - name: Terraform Apply (Create)
         if: ${{ github.event.inputs.action == 'create' }}
         run: terraform apply -auto-approve
 
-      # 6️⃣ Terraform Destroy (delete)
+      # 6️⃣ Terraform Apply for Modify
+      - name: Terraform Apply (Modify)
+        if: ${{ github.event.inputs.action == 'modify' }}
+        run: terraform apply -auto-approve
+
+      # 7️⃣ Terraform Destroy for Delete
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'delete' }}
         run: terraform destroy -auto-approve
