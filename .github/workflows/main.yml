@@ -70,6 +70,9 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: Terraform
+        run: terraform plan
+
       # 5️⃣ Terraform Apply for Create
       - name: Terraform Apply (Create)
         if: ${{ github.event.inputs.action == 'create' }}
