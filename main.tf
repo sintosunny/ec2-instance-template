@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 module "ec2" {
-  source = "git::https://github.com/sintosuny/terraform-ec2-modules.git//modules/ec2?ref=v1.0.0"
+  source = "git::https://github.com/sintosunny/terraform-ec2-modules.git//modules/ec2?ref=v1.0.0"
 
   instance_name = var.instance_name
   ami           = var.ami
@@ -11,4 +11,5 @@ module "ec2" {
   volume_size   = var.volume_size
   postgres      = var.postgres
 }
+
 
